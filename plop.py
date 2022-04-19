@@ -1,36 +1,31 @@
 import sys
+#import sage
 
-# Generates a CR1S table from a parsed expr tree
-def table(node):
-    # Tuples of (q_l, q_r, q_o, q_m, q_c)
-    q_table = []
-    # [(a,b,c)]
-    abc = []
+# Generates a R1CS table from a parsed expr tree
+def to_table(node):
+    # Tuples of (a, b, c, q_l, q_r, q_o, q_m, q_c)
+    table = []
 
     match node:
         case (_, a, b):
             # Recurse
-            if ta := table(a):
-                q_table += ta[0]
-                abc += ta[1]
-            if tb := table(b):
-                q_table += tb[0]
-                abc += tb[1]
+            if ta := to_table(a):
+                table += ta
+            if tb := to_table(b):
+                table += tb
 
     # Add top level
     match node:
         case ('+', a, b):
             a = evaluate(a)
             b = evaluate(b)
-            q_table.append((1,1,1,0,0))
-            abc.append((a,b,a+b))
+            table.append((a,b,a+b,1,1,1,0,0))
         case ('*', a, b):
             a = evaluate(a)
             b = evaluate(b)
-            q_table.append((0,0,1,1,0))
-            abc.append((a,b,a*b))
+            table.append((a,b,a*b,0,0,1,1,0))
 
-    return (q_table, abc)
+    return table
 
 def evaluate(node):
     match node:
@@ -41,4 +36,4 @@ def evaluate(node):
 
 if __name__ == '__main__':
     ast = ('+', ('*', 5, 6), 2)
-    print(table(ast))
+    print(to_table(ast))
